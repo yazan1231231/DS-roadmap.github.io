@@ -98,6 +98,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .dsu-node {
+            transition: all 0.5s ease-in-out;
+        }
+        .dsu-line {
+            transition: all 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -178,6 +184,7 @@
             },
             attachEventListeners: function() {
                 if (this.activeView === 'groundwork') this.initBigOChart();
+                if (this.activeView === 'arrays') this.initArrayVisuals();
                 if (this.activeView === 'stacks') this.initStackAnimation();
                 if (this.activeView === 'queues') this.initQueueAnimation();
                 if (this.activeView === 'deques') this.initDequeAnimation();
@@ -455,8 +462,47 @@ sortedScores.put("alpha", 20); // Will be stored before "zulu"
                     </div>
                 `;
             },
-            renderArrayDetails: function() { return `<div>Array Details Coming Soon</div>`;},
-            renderLinkedListDetails: function() { return `<div>Linked List Details Coming Soon</div>`;},
+            renderArrayDetails: function() { 
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Arrays & Key Techniques</h2>
+                    <p class="mb-8 text-gray-600">Beyond simple storage, arrays are the foundation for many efficient algorithms. Mastering techniques like Prefix Sums and Two Pointers is essential for solving a wide range of problems.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Prefix Sums</h3>
+                            <p class="mb-4 text-gray-600">Pre-calculating prefix sums allows for O(1) range sum queries. <code>prefix[i]</code> stores the sum of elements from index 0 to <code>i-1</code>. The sum of range [L, R] is then <code>prefix[R+1] - prefix[L]</code>.</p>
+                            <div id="prefix-sum-visualization"></div>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Two-Pointer Technique</h3>
+                            <p class="mb-4 text-gray-600">This technique uses two pointers to traverse an array in a coordinated way, often on a sorted array, to find pairs or subarrays satisfying a condition in O(N) time.</p>
+                            <div id="two-pointer-visualization"></div>
+                        </div>
+                    </div>
+                `;
+            },
+            renderLinkedListDetails: function() { 
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Linked Lists</h2>
+                    <p class="mb-8 text-gray-600">A linked list is a linear data structure where elements are not stored at contiguous memory locations. They consist of nodes, where each node contains data and a reference (or link) to the next node in the sequence.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card p-6">
+                             <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Strengths & Weaknesses</h3>
+                             <p class="text-gray-600 mb-4">Their main strength is efficient O(1) insertion/deletion if a pointer to the node is known. However, O(N) access/search time makes them less suitable for many competitive programming problems compared to dynamic arrays.</p>
+                             <ul class="space-y-2 text-sm">
+                                <li><strong class="text-[#c58a56]">Use For:</strong> Problems specifically requiring many arbitrary insertions/deletions where you can maintain pointers. Understanding pointers for trees/graphs.</li>
+                                <li><strong class="text-red-500">Avoid For:</strong> General sequence storage, problems requiring frequent random access or searching.</li>
+                            </ul>
+                        </div>
+                         <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Practice Niche Problems</h3>
+                            <button id="gemini-problems-btn" data-topic="Linked List" class="gemini-button w-full flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm">
+                                ✨ Suggest Practice Problems
+                            </button>
+                            <div id="gemini-problems-output" class="mt-4 space-y-4"></div>
+                        </div>
+                    </div>
+                `;
+            },
             renderStackDetails: function() {
                 return `
                     <h2 class="text-3xl font-bold tracking-tight mb-4">Stacks: The LIFO Principle</h2>
@@ -549,9 +595,135 @@ sortedScores.put("alpha", 20); // Will be stored before "zulu"
                     </div>
                 `;
             },
-             renderDequeDetails: function() { return `<div>Deque Details Coming Soon</div>`;},
-             renderDsuDetails: function() { return `<div>DSU Details Coming Soon</div>`;},
-             renderTrieDetails: function() { return `<div>Trie Details Coming Soon</div>`;},
+             renderDequeDetails: function() { 
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Deques: Double-Ended Queues</h2>
+                    <p class="mb-8 text-gray-600">A Deque (pronounced "deck") combines the functionality of a stack and a queue, allowing efficient O(1) insertion and deletion at both the front and the back.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Interactive Demo: Sliding Window Minimum</h3>
+                            <p class="mb-4 text-gray-600">A classic application of deques is finding the minimum (or maximum) in a sliding window in O(N) total time. The deque stores indices, maintaining them in increasing order of their corresponding values.</p>
+                            <div class="flex items-center space-x-2 mb-4">
+                                <label for="window-size" class="text-sm font-medium">Window Size (K):</label>
+                                <input id="window-size" type="number" value="3" min="1" max="5" class="w-20 px-2 py-1 border border-gray-300 rounded-md">
+                                <button id="deque-slide-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Next Step</button>
+                            </div>
+                            <div id="deque-visualization" class="space-y-3"></div>
+                        </div>
+                        <div class="space-y-6">
+                             <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Key Use Cases</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Sliding Window Min/Max</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">0-1 BFS</span>
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Implementing Stacks & Queues</span>
+                                </div>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Ready to Practice?</h3>
+                                <button id="gemini-problems-btn" data-topic="Deque or Sliding Window" class="gemini-button w-full flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm">
+                                    ✨ Suggest Practice Problems
+                                </button>
+                                <div id="gemini-problems-output" class="mt-4 space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+             renderDsuDetails: function() { 
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Disjoint Set Union (DSU)</h2>
+                    <p class="mb-8 text-gray-600">Also known as Union-Find, DSU is a data structure that tracks a partition of elements into a number of disjoint (non-overlapping) sets. It provides near-constant time operations to add new sets, merge sets, and determine if elements are in the same set.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                        <div class="lg:col-span-3 card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Interactive Demo</h3>
+                            <p class="mb-4 text-gray-600">Connect nodes to see how Union-by-Size and Path Compression keep the trees flat, leading to ultra-fast 'find' operations. Select two nodes and click 'Union' to connect them.</p>
+                            <div class="flex flex-wrap items-center gap-2 mb-4">
+                                <select id="dsu-node1" class="px-3 py-2 border border-gray-300 rounded-md"></select>
+                                <select id="dsu-node2" class="px-3 py-2 border border-gray-300 rounded-md"></select>
+                                <button id="dsu-union-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Union</button>
+                                <button id="dsu-reset-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Reset</button>
+                            </div>
+                            <div class="relative h-96 bg-gray-50 rounded-lg">
+                                <svg id="dsu-svg" class="w-full h-full"></svg>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-6">
+                             <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Key Optimizations</h3>
+                                <ul class="space-y-2 text-gray-600 text-sm">
+                                    <li><strong>Union by Size/Rank:</strong> Always attach the smaller tree to the root of the larger tree to keep them from getting tall.</li>
+                                    <li><strong>Path Compression:</strong> During a 'find' operation, make every node on the path point directly to the root. This dramatically flattens the structure for future searches.</li>
+                                </ul>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Ready to Practice?</h3>
+                                <button id="gemini-problems-btn" data-topic="Disjoint Set Union (DSU) or Union-Find" class="gemini-button w-full flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm">
+                                    ✨ Suggest Practice Problems
+                                </button>
+                                <div id="gemini-problems-output" class="mt-4 space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+             renderTrieDetails: function() { 
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Tries (Prefix Trees)</h2>
+                    <p class="mb-8 text-gray-600">A Trie is a special tree for storing strings that allows for fast retrieval of words and prefixes. Each path from the root represents a prefix.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Interactive Demo</h3>
+                            <p class="mb-4 text-gray-600">Insert words into the Trie to see how common prefixes share the same path. Nodes marking the end of a word are highlighted.</p>
+                            <div class="flex items-center space-x-2 mb-4">
+                                <input id="trie-input" type="text" placeholder="Enter word" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <button id="trie-insert-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Insert</button>
+                            </div>
+                            <div class="relative h-72 bg-gray-50 rounded-lg p-4 overflow-auto">
+                                <div id="trie-visualization"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                             <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Beyond Strings: Max XOR Pair</h3>
+                                <p class="text-gray-600">A powerful application is finding the maximum XOR pair in a set of integers. By inserting the binary representations into a Trie, you can traverse the Trie bit-by-bit to greedily build the number that gives the maximum XOR with a given value.</p>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Ready to Practice?</h3>
+                                <button id="gemini-problems-btn" data-topic="Trie (Prefix Tree) including string and XOR problems" class="gemini-button w-full flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm">
+                                    ✨ Suggest Practice Problems
+                                </button>
+                                <div id="gemini-problems-output" class="mt-4 space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            initArrayVisuals: function() {
+                // Simplified visualization logic for demonstration
+                const prefixContainer = document.getElementById('prefix-sum-visualization');
+                const twoPointerContainer = document.getElementById('two-pointer-visualization');
+                
+                const originalArray = [2, -1, 3, 5, -4, 8];
+                let prefixSums = [0];
+                originalArray.reduce((acc, val, i) => {
+                    const newSum = acc + val;
+                    prefixSums.push(newSum);
+                    return newSum;
+                }, 0);
+
+                prefixContainer.innerHTML = `
+                    <div class="mb-2"><strong>Original:</strong> ${JSON.stringify(originalArray)}</div>
+                    <div><strong>Prefix Sums:</strong> ${JSON.stringify(prefixSums)}</div>
+                    <p class="text-sm mt-2 text-gray-500">Sum of range [2, 4] (3, 5, -4) = prefix[5] - prefix[2] = 11 - 1 = 10.</p>
+                `;
+
+                const sortedArray = [-4, -1, 2, 3, 5, 8];
+                 twoPointerContainer.innerHTML = `
+                    <div class="mb-2"><strong>Sorted Array:</strong> ${JSON.stringify(sortedArray)}</div>
+                    <p class="text-sm mt-2 text-gray-500">To find a pair with sum 4: Left pointer starts at -4, Right at 8. Sum is 4. Found!</p>
+                `;
+            },
             initStackAnimation: function() {
                 const input = document.getElementById('stack-input');
                 const pushBtn = document.getElementById('stack-push-btn');
@@ -607,9 +779,180 @@ sortedScores.put("alpha", 20); // Will be stored before "zulu"
                 });
                 updateQueueView();
             },
-             initDequeAnimation: function() {},
-             initDsuAnimation: function() {},
-             initTrieAnimation: function() {},
+             initDequeAnimation: function() {
+                const data = [1, 3, -1, -3, 5, 3, 6, 7];
+                let windowSize = 3;
+                let currentStep = 0;
+                const visualizationContainer = document.getElementById('deque-visualization');
+                const slideBtn = document.getElementById('deque-slide-btn');
+                const windowSizeInput = document.getElementById('window-size');
+
+                function renderStep() {
+                    if (currentStep >= data.length) currentStep = 0;
+                    windowSize = parseInt(windowSizeInput.value) || 3;
+                    const end = currentStep + 1;
+                    const start = Math.max(0, end - windowSize);
+                    
+                    const windowData = data.slice(start, end);
+                    let deque = [];
+                    for(let i=start; i < end; i++) {
+                        while(deque.length > 0 && data[deque[deque.length - 1]] >= data[i]) {
+                           deque.pop();
+                        }
+                        deque.push(i);
+                    }
+                    while(deque.length > 0 && deque[0] <= start - 1){
+                        deque.shift();
+                    }
+                    
+                    const min = data[deque[0]];
+                    
+                    visualizationContainer.innerHTML = `
+                        <div class="mb-2"><strong>Array:</strong> [${data.map((d, i) => `<span class="${i >= start && i < end ? 'font-bold text-[#c58a56]' : ''}">${d}</span>`).join(', ')}]</div>
+                        <div><strong>Window [${start}, ${end-1}]:</strong> [${windowData.join(', ')}]</div>
+                        <div><strong>Deque (Indices):</strong> [${deque.join(', ')}]</div>
+                        <div class="font-bold mt-2">Window Minimum: ${min}</div>
+                    `;
+                }
+                
+                slideBtn.addEventListener('click', () => {
+                    currentStep++;
+                    renderStep();
+                });
+                windowSizeInput.addEventListener('change', () => { currentStep = 0; renderStep(); });
+                
+                renderStep();
+            },
+             initDsuAnimation: function() {
+                const numNodes = 8;
+                let parent = Array.from({length: numNodes}, (_, i) => i);
+                let size = Array(numNodes).fill(1);
+                const positions = Array.from({length: numNodes}, () => ({x: Math.random() * 80 + 10, y: Math.random() * 80 + 10}));
+
+                const svg = document.getElementById('dsu-svg');
+                const node1Select = document.getElementById('dsu-node1');
+                const node2Select = document.getElementById('dsu-node2');
+                const unionBtn = document.getElementById('dsu-union-btn');
+                const resetBtn = document.getElementById('dsu-reset-btn');
+
+                function find(i) {
+                    if (parent[i] === i) return i;
+                    // Path Compression
+                    return parent[i] = find(parent[i]);
+                }
+
+                function union(i, j) {
+                    const rootI = find(i);
+                    const rootJ = find(j);
+                    if (rootI !== rootJ) {
+                        // Union by Size
+                        if (size[rootI] < size[rootJ]) {
+                            parent[rootI] = rootJ;
+                            size[rootJ] += size[rootI];
+                        } else {
+                            parent[rootJ] = rootI;
+                            size[rootI] += size[rootJ];
+                        }
+                    }
+                    render();
+                }
+
+                function render() {
+                    svg.innerHTML = '';
+                    // First render lines
+                    for (let i = 0; i < numNodes; i++) {
+                        const p = parent[i];
+                        if (i !== p) {
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', `${positions[i].x}%`);
+                            line.setAttribute('y1', `${positions[i].y}%`);
+                            line.setAttribute('x2', `${positions[p].x}%`);
+                            line.setAttribute('y2', `${positions[p].y}%`);
+                            line.setAttribute('stroke', '#eaddd7');
+                            line.setAttribute('stroke-width', '2');
+                            line.classList.add('dsu-line');
+                            svg.appendChild(line);
+                        }
+                    }
+                     // Then render nodes so they are on top
+                    for (let i = 0; i < numNodes; i++) {
+                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        circle.setAttribute('cx', `${positions[i].x}%`);
+                        circle.setAttribute('cy', `${positions[i].y}%`);
+                        circle.setAttribute('r', '10');
+                        circle.setAttribute('fill', find(i) === i ? '#c58a56' : '#5a514b');
+                        circle.classList.add('dsu-node');
+                        svg.appendChild(circle);
+
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', `${positions[i].x}%`);
+                        text.setAttribute('y', `${positions[i].y}%`);
+                        text.setAttribute('dy', '.3em');
+                        text.setAttribute('text-anchor', 'middle');
+                        text.setAttribute('fill', 'white');
+                        text.textContent = i;
+                        svg.appendChild(text);
+                    }
+                }
+                
+                function reset() {
+                    parent = Array.from({length: numNodes}, (_, i) => i);
+                    size = Array(numNodes).fill(1);
+                    render();
+                }
+
+                for(let i=0; i < numNodes; i++){
+                    node1Select.innerHTML += `<option value="${i}">${i}</option>`;
+                    node2Select.innerHTML += `<option value="${i}">${i}</option>`;
+                }
+                node2Select.value = 1;
+
+                unionBtn.addEventListener('click', () => union(parseInt(node1Select.value), parseInt(node2Select.value)));
+                resetBtn.addEventListener('click', reset);
+                
+                reset();
+             },
+             initTrieAnimation: function() {
+                const input = document.getElementById('trie-input');
+                const insertBtn = document.getElementById('trie-insert-btn');
+                const container = document.getElementById('trie-visualization');
+                let trie = { children: {} };
+
+                function renderTrie(node, prefix = '') {
+                    let html = '<ul class="pl-4 border-l border-gray-200">';
+                    for (const char in node.children) {
+                        const childNode = node.children[char];
+                        const isEndOfWord = childNode.isEndOfWord ? 'font-bold text-[#c58a56]' : '';
+                        html += `<li class="mt-1"><span class="inline-block w-6 text-center bg-gray-100 rounded mr-2 ${isEndOfWord}">${char}</span>`;
+                        html += renderTrie(childNode, prefix + char);
+                        html += '</li>';
+                    }
+                    html += '</ul>';
+                    return html;
+                }
+
+                function insertWord(word) {
+                    let currentNode = trie;
+                    for (const char of word) {
+                        if (!currentNode.children[char]) {
+                            currentNode.children[char] = { children: {} };
+                        }
+                        currentNode = currentNode.children[char];
+                    }
+                    currentNode.isEndOfWord = true;
+                }
+                
+                insertBtn.addEventListener('click', () => {
+                    const word = input.value.toLowerCase().trim();
+                    if (word) {
+                        insertWord(word);
+                        container.innerHTML = renderTrie(trie);
+                        input.value = '';
+                    }
+                });
+                
+                 container.innerHTML = renderTrie(trie);
+             },
             initBigOChart: function() {
                 const ctx = document.getElementById('bigOChart').getContext('2d');
                 new Chart(ctx, {
