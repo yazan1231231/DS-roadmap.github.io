@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Roadmap: Mastering Data Structures</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Serene Code -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard with a fixed top navigation bar corresponding to the main sections of the report. This allows users to jump between topics without scrolling through a long document. Clicking a navigation item loads a specific 'view' into the main content area. Each view is a highly structured, interactive module for a topic (e.g., 'Stacks'). This view contains interactive diagrams, comparison tables, and code snippets. This non-linear, component-based structure was chosen to transform the static report into an active learning tool, allowing users to explore and compare concepts in a non-sequential, engaging manner, which is more effective for learning and retention than passive reading. -->
+    <!-- Visualization & Content Choices: Data is presented using a mix of interactive elements to maximize engagement and understanding. Big O complexities are shown in a Chart.js bar chart for quick visual comparison. Core data structure operations (like Stack push/pop) are visualized with simple, JS-driven HTML/CSS animations to make abstract concepts tangible. Comparisons (e.g., Hash Table vs. Tree Map, Segment Tree vs. Fenwick Tree) use tabbed views or side-by-side tables to highlight trade-offs clearly. The learning path itself is represented as a clickable flowchart. This multi-faceted approach caters to different learning styles and promotes active exploration over passive consumption. All visuals are built with HTML/CSS/JS or Canvas via Chart.js. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #3d3b38;
+        }
+        .nav-button {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active, .nav-button:hover {
+            color: #c58a56;
+            border-bottom-color: #c58a56;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
+        }
+        .card-button {
+            transition: all 0.2s ease-in-out;
+            background-color: #eaddd7;
+            color: #5a514b;
+        }
+        .card-button:hover {
+            background-color: #c58a56;
+            color: #ffffff;
+        }
+        .gemini-button {
+            background-color: #5a514b;
+            color: white;
+        }
+        .gemini-button:hover {
+            background-color: #3d3b38;
+        }
+        .code-block {
+            background-color: #2e2e2e;
+            color: #d4d4d4;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        code:not([class*="block"]) {
+            background-color: #eaddd7;
+            color: #5a514b;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+            font-weight: 500;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+        .tab.active {
+            border-bottom-color: #c58a56;
+            color: #c58a56;
+            font-weight: 600;
+        }
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-[#5a514b]">DS Roadmap</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div id="nav-container" class="ml-10 flex items-baseline space-x-4">
+                        <button class="nav-button px-3 py-2 rounded-md text-sm font-medium" data-view="home">Home</button>
+                        <button class="nav-button px-3 py-2 rounded-md text-sm font-medium" data-view="groundwork">Groundwork</button>
+                        <button class="nav-button px-3 py-2 rounded-md text-sm font-medium" data-view="fundamental">Fundamental</button>
+                        <button class="nav-button px-3 py-2 rounded-md text-sm font-medium" data-view="nonlinear">Non-Linear</button>
+                        <button class="nav-button px-3 py-2 rounded-md text-sm font-medium" data-view="graphs">Graphs</button>
+                        <button class="nav-button px-3 py-2 rounded-md text-sm font-medium" data-view="advanced">Advanced</button>
+                        <button class="nav-button px-3 py-2 rounded-md text-sm font-medium" data-view="practice">Practice</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main id="main-content" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    </main>
+    <script>
+        const app = {
+            activeView: 'home',
+            data: {
+                fundamental: {
+                    title: 'The Building Blocks: Fundamental Data Structures',
+                    intro: 'With foundational concepts in place, the next step is mastering fundamental data structures. These versatile tools are used repeatedly to build complex solutions. This section covers arrays, linked lists, stacks, queues, and deques, exploring their properties, operations, and common applications in competitive programming.',
+                    items: {
+                        arrays: { title: 'Arrays & Techniques', icon: '⊞', desc: 'The workhorse for storing sequences and its key algorithms.' },
+                        linkedlists: { title: 'Linked Lists', icon: '🔗', desc: 'Dynamic sequences with efficient insertion and deletion.' },
+                        stacks: { title: 'Stacks', icon: '📚', desc: 'LIFO principle in action, essential for parsing and recursion.' },
+                        queues: { title: 'Queues', icon: '→', desc: 'FIFO principle at work, the core of BFS and scheduling.' },
+                        deques: { title: 'Deques', icon: '↔', desc: 'Double-ended queues, powerful for sliding window problems.' }
+                    }
+                },
+                advanced: {
+                    title: 'Gaining the Competitive Edge: Advanced Data Structures',
+                    intro: 'To truly excel, one must master advanced structures designed for specific, complex problems. This section explores DSU, Segment Trees, Fenwick Trees, and Tries.',
+                     items: {
+                        dsu: { title: 'Disjoint Set Union', icon: '🌳', desc: 'Efficiently manage dynamic sets and connectivity.' },
+                        segment_trees: { title: 'Segment Trees', icon: '📊', desc: 'Mastering range queries and updates with lazy propagation.'},
+                        fenwick_trees: { title: 'Fenwick Trees (BITs)', icon: '⚡', desc: 'Agile prefix computations for rapid queries.'},
+                        tries: { title: 'Tries (Prefix Trees)', icon: '#️⃣', desc: 'Excelling in string manipulation and XOR problems.' }
+                    }
+                }
+            },
+            render: function() {
+                const views = {
+                    home: this.renderHome,
+                    groundwork: this.renderGroundwork,
+                    fundamental: this.renderFundamental,
+                    nonlinear: this.renderNonLinear,
+                    graphs: this.renderGraphs,
+                    advanced: this.renderAdvanced,
+                    practice: this.renderPractice,
+                    arrays: this.renderArrayDetails,
+                    linkedlists: this.renderLinkedListDetails,
+                    stacks: this.renderStackDetails,
+                    queues: this.renderQueueDetails,
+                    deques: this.renderDequeDetails,
+                    dsu: this.renderDsuDetails,
+                    segment_trees: () => this.renderAdvancedTree('segment_trees'),
+                    fenwick_trees: () => this.renderAdvancedTree('fenwick_trees'),
+                    tries: this.renderTrieDetails
+                };
+                const renderFunction = views[this.activeView] || this.renderHome;
+                document.getElementById('main-content').innerHTML = renderFunction.call(this);
+                this.postRender();
+            },
+            postRender: function() {
+                this.updateNav();
+                this.attachEventListeners();
+            },
+            attachEventListeners: function() {
+                if (this.activeView === 'groundwork') this.initBigOChart();
+                if (this.activeView === 'stacks') this.initStackAnimation();
+                if (this.activeView === 'queues') this.initQueueAnimation();
+                if (this.activeView === 'deques') this.initDequeAnimation();
+                if (this.activeView === 'dsu') this.initDsuAnimation();
+                if (this.activeView === 'tries') this.initTrieAnimation();
+                if (this.activeView === 'nonlinear' || this.activeView === 'segment_trees' || this.activeView === 'fenwick_trees') this.initTabbedViews();
+                
+                const problemBtn = document.getElementById('gemini-problems-btn');
+                if (problemBtn) {
+                    problemBtn.addEventListener('click', () => this.fetchPracticeProblems(problemBtn.dataset.topic));
+                }
+
+                const analogyBtn = document.getElementById('gemini-analogy-btn');
+                if (analogyBtn) {
+                    analogyBtn.addEventListener('click', () => this.fetchAnalogy(analogyBtn.dataset.topic));
+                }
+            },
+            updateNav: function() {
+                document.querySelectorAll('#nav-container button').forEach(button => {
+                    if (button.dataset.view === this.activeView) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+            },
+            renderHome: function() {
+                return `
+                    <div class="text-center">
+                        <h2 class="text-4xl font-bold tracking-tight text-[#5a514b] sm:text-5xl">The Competitive Programmer's Interactive Roadmap</h2>
+                        <p class="mt-6 text-lg leading-8 text-gray-600">This interactive application translates the comprehensive text guide into an explorable learning experience. Navigate through the core concepts of data structures, visualize their operations, and compare their trade-offs to accelerate your journey in competitive programming.</p>
+                    </div>
+                    <div class="mt-12 card p-8">
+                        <h3 class="text-2xl font-semibold mb-6 text-center text-[#5a514b]">Your Learning Path</h3>
+                        <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                            <div class="p-4 rounded-lg bg-gray-50 flex-1"><strong class="text-[#c58a56]">1.</strong> Groundwork</div>
+                            <div class="text-2xl text-gray-300">→</div>
+                            <div class="p-4 rounded-lg bg-gray-50 flex-1"><strong class="text-[#c58a56]">2.</strong> Fundamentals</div>
+                            <div class="text-2xl text-gray-300">→</div>
+                            <div class="p-4 rounded-lg bg-gray-50 flex-1"><strong class="text-[#c58a56]">3.</strong> Non-Linear</div>
+                            <div class="text-2xl text-gray-300">→</div>
+                            <div class="p-4 rounded-lg bg-gray-50 flex-1"><strong class="text-[#c58a56]">4.</strong> Graphs</div>
+                            <div class="text-2xl text-gray-300">→</div>
+                            <div class="p-4 rounded-lg bg-gray-50 flex-1"><strong class="text-[#c58a56]">5.</strong> Advanced</div>
+                        </div>
+                        <p class="text-center mt-6 text-gray-500">Click the topics in the navigation bar to begin your journey.</p>
+                    </div>
+                `;
+            },
+            renderGroundwork: function() {
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Laying the Groundwork</h2>
+                    <p class="mb-8 text-gray-600">Embarking on the journey of competitive programming requires a robust toolkit. This section lays the essential groundwork, covering the pivotal role of data structures, the choice of programming languages, and the critical concept of efficiency analysis through Big O notation.</p>
+                    <div class="card p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Decoding Efficiency: A Deep Dive into Big O Notation</h3>
+                        <p class="mb-6 text-gray-600">Big O notation describes the upper bound of an algorithm's running time as the input size grows. In competitive programming, understanding this is key to predicting whether your solution will pass within the time limits. An intuition for these complexities helps eliminate infeasible solutions quickly.</p>
+                        <div class="chart-container">
+                            <canvas id="bigOChart"></canvas>
+                        </div>
+                        <p class="text-center text-sm text-gray-500 mt-4">Hover over bars to see typical maximum input sizes for a ~1 second runtime.</p>
+                    </div>
+                `;
+            },
+            renderFundamental: function() {
+                const section = this.data.fundamental;
+                let itemsHtml = Object.keys(section.items).map(key => {
+                    const item = section.items[key];
+                    return `
+                        <div class="card p-6 flex flex-col items-center text-center">
+                            <div class="text-4xl mb-4">${item.icon}</div>
+                            <h4 class="text-lg font-semibold text-[#5a514b]">${item.title}</h4>
+                            <p class="text-gray-600 mt-2 flex-grow">${item.desc}</p>
+                            <button onclick="app.setView('${key}')" class="card-button mt-4 px-4 py-2 rounded-lg font-semibold text-sm">Explore</button>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">${section.title}</h2>
+                    <p class="mb-8 text-gray-600">${section.intro}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        ${itemsHtml}
+                    </div>
+                `;
+            },
+            renderNonLinear: function() {
+                 return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Organizing Data Efficiently: Non-Linear Structures</h2>
+                    <p class="mb-8 text-gray-600">While linear data structures organize data sequentially, many problems involve more complex relationships. This section explores non-linear structures for rapid lookups and hierarchical data management.</p>
+                    <div class="card p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Hash Tables vs. Tree Maps</h3>
+                        <p class="mb-6 text-gray-600">Choosing between a hash-based or tree-based map/set is a common decision point. The choice depends on whether you need speed, guaranteed performance, or ordering.</p>
+                        <div class="tabs border-b border-gray-200 mb-6">
+                            <button class="tab py-2 px-4 border-b-2 border-transparent text-gray-500" data-tab-content="comparison-table">Comparison</button>
+                            <button class="tab py-2 px-4 border-b-2 border-transparent text-gray-500" data-tab-content="cpp-code">C++</button>
+                            <button class="tab py-2 px-4 border-b-2 border-transparent text-gray-500" data-tab-content="java-code">Java</button>
+                        </div>
+                        <div id="comparison-table" class="tab-content">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th class="py-2 px-4 bg-gray-50 border-b">Feature</th>
+                                        <th class="py-2 px-4 bg-gray-50 border-b">Hash Table (unordered_map)</th>
+                                        <th class="py-2 px-4 bg-gray-50 border-b">Balanced Tree (map)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b"><td class="py-2 px-4 font-medium">Time Complexity</td><td class="py-2 px-4">Avg: O(1), Worst: O(N)</td><td class="py-2 px-4">Avg/Worst: O(log N)</td></tr>
+                                    <tr class="border-b"><td class="py-2 px-4 font-medium">Ordering</td><td class="py-2 px-4">No order</td><td class="py-2 px-4">Sorted by key</td></tr>
+                                    <tr class="border-b"><td class="py-2 px-4 font-medium">Use Case</td><td class="py-2 px-4">Fast lookups, frequency counts</td><td class="py-2 px-4">When order is needed, or to avoid worst-case hash performance</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="cpp-code" class="tab-content hidden">
+                            <p class="mb-2 text-gray-600">C++ STL provides both hash-based and tree-based containers.</p>
+                            <div class="code-block">
+// Hash-based map for speed
+#include &lt;unordered_map&gt;
+std::unordered_map&lt;std::string, int&gt; scores;
+scores["player1"] = 100;
+
+// Tree-based map for order
+#include &lt;map&gt;
+std::map&lt;std::string, int&gt; sorted_scores;
+sorted_scores["zulu"] = 10;
+sorted_scores["alpha"] = 20; // Will be stored before "zulu"
+                            </div>
+                        </div>
+                        <div id="java-code" class="tab-content hidden">
+                            <p class="mb-2 text-gray-600">Java's Collections Framework offers similar choices.</p>
+                            <div class="code-block">
+// Hash-based map for speed
+import java.util.HashMap;
+HashMap&lt;String, Integer&gt; scores = new HashMap&lt;&gt;();
+scores.put("player1", 100);
+
+// Tree-based map for order
+import java.util.TreeMap;
+TreeMap&lt;String, Integer&gt; sortedScores = new TreeMap&lt;&gt;();
+sortedScores.put("zulu", 10);
+sortedScores.put("alpha", 20); // Will be stored before "zulu"
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            renderGraphs: function() {
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Tackling Connectivity: Graph Data Structures</h2>
+                    <p class="mb-8 text-gray-600">Graphs model relationships between objects and are central to many competitive programming problems. This section covers representations and essential traversal algorithms.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Adjacency Matrix</h3>
+                            <p class="mb-4 text-gray-600">An N x N matrix where <code>adj[i][j] = 1</code> indicates an edge. Best for dense graphs with small N.</p>
+                            <ul class="list-disc list-inside space-y-2 text-sm">
+                                <li><strong class="text-[#c58a56]">Pros:</strong> O(1) edge checking.</li>
+                                <li><strong class="text-red-500">Cons:</strong> O(N²) space complexity, slow neighbor iteration.</li>
+                            </ul>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Adjacency List</h3>
+                            <p class="mb-4 text-gray-600">An array of lists, where <code>adj[i]</code> contains all neighbors of vertex <code>i</code>. The standard for sparse graphs.</p>
+                            <ul class="list-disc list-inside space-y-2 text-sm">
+                                <li><strong class="text-[#c58a56]">Pros:</strong> O(N+E) space, optimal neighbor iteration.</li>
+                                <li><strong class="text-red-500">Cons:</strong> O(degree(i)) edge checking.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-8 card p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Need a simpler explanation?</h3>
+                        <button id="gemini-analogy-btn" data-topic="Graph Representations" class="gemini-button w-full flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm">
+                            ✨ Explain with an Analogy
+                        </button>
+                        <div id="gemini-analogy-output" class="mt-4 text-gray-600 bg-gray-50 p-4 rounded-lg hidden"></div>
+                    </div>
+                `;
+            },
+             renderAdvanced: function() {
+                const section = this.data.advanced;
+                let itemsHtml = Object.keys(section.items).map(key => {
+                    const item = section.items[key];
+                    return `
+                        <div class="card p-6 flex flex-col items-center text-center">
+                            <div class="text-4xl mb-4">${item.icon}</div>
+                            <h4 class="text-lg font-semibold text-[#5a514b]">${item.title}</h4>
+                            <p class="text-gray-600 mt-2 flex-grow">${item.desc}</p>
+                            <button onclick="app.setView('${key}')" class="card-button mt-4 px-4 py-2 rounded-lg font-semibold text-sm">Explore</button>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">${section.title}</h2>
+                    <p class="mb-8 text-gray-600">${section.intro}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        ${itemsHtml}
+                    </div>
+                `;
+            },
+            renderAdvancedTree: function(type) {
+                 const title = type === 'segment_trees' ? 'Segment Trees' : 'Fenwick Trees (BITs)';
+                 const intro = type === 'segment_trees' 
+                    ? 'A powerful and versatile tree for range queries (min, max, sum, GCD) and range updates.'
+                    : 'A specialized and efficient tree for point updates and prefix sum queries.';
+
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">${title}</h2>
+                    <p class="mb-8 text-gray-600">${intro}</p>
+                     <div class="card p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Deeper Dive & Resources</h3>
+                        <p class="mb-6 text-gray-600">Both structures are excellent for range queries and updates, but they have different strengths. Choosing the right one can save significant coding time and complexity.</p>
+                        <div class="tabs border-b border-gray-200 mb-6">
+                            <button class="tab py-2 px-4 border-b-2 border-transparent text-gray-500" data-tab-content="deep-dive">Deep Dive</button>
+                            <button class="tab py-2 px-4 border-b-2 border-transparent text-gray-500" data-tab-content="comparison-table">Comparison</button>
+                            <button class="tab py-2 px-4 border-b-2 border-transparent text-gray-500" data-tab-content="study-links">Further Study</button>
+                        </div>
+                        <div id="deep-dive" class="tab-content space-y-6">
+                            <div>
+                                <h4 class="font-semibold text-lg text-[#5a514b] mb-2">Segment Tree Explained</h4>
+                                <p class="text-gray-600 mb-4">A Segment Tree is a binary tree used for storing information about intervals or segments. Each node in the tree represents an interval of an array. The root represents the entire array (e.g., index 0 to N-1), and each leaf represents a single element. The power comes from its divide-and-conquer approach: an interval is broken into two halves, which are represented by the node's children. This recursive decomposition allows for queries and updates on any range in O(log N) time.</p>
+                                <p class="text-gray-600">The core idea is the <strong>merge</strong> operation. An internal node stores the 'merged' result of its children (e.g., sum, min, max, GCD). For a range update (e.g., add 5 to all elements from index L to R), <strong>lazy propagation</strong> is used to avoid updating every single element. An update is 'tagged' on a high-level node and only propagated down to its children when that node's sub-range is visited by a query.</p>
+                            </div>
+                            <hr class="my-6">
+                            <div>
+                                <h4 class="font-semibold text-lg text-[#5a514b] mb-2">Fenwick Tree (BIT) Explained</h4>
+                                <p class="text-gray-600 mb-4">A Fenwick Tree, or Binary Indexed Tree, is a more specialized data structure that also excels at range queries and point updates. Its genius lies in an implicit tree structure represented in a simple array. Each index <code>i</code> in the BIT is 'responsible' for a specific range of the original array, determined by the binary representation of <code>i</code>.</p>
+                                <p class="text-gray-600">The key operation is isolating the last set bit (LSB) of an index, often with the bitwise trick <code>i & -i</code>. To query the prefix sum up to <code>idx</code>, you add the value at <code>bit[idx]</code>, then subtract the LSB from <code>idx</code> and repeat until <code>idx</code> is 0. To update a value at <code>idx</code>, you add the delta to <code>bit[idx]</code>, then add the LSB to <code>idx</code> and repeat until you are out of bounds. This allows both operations in O(log N) time with very low constant factors and less memory than a Segment Tree.</p>
+                            </div>
+                        </div>
+                        <div id="comparison-table" class="tab-content hidden">
+                             <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th class="py-2 px-4 bg-gray-50 border-b">Feature</th>
+                                        <th class="py-2 px-4 bg-gray-50 border-b">Segment Tree</th>
+                                        <th class="py-2 px-4 bg-gray-50 border-b">Fenwick Tree (BIT)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b"><td class="py-2 px-4 font-medium">Complexity</td><td class="py-2 px-4">O(log N) for all ops</td><td class="py-2 px-4">O(log N) for all ops</td></tr>
+                                    <tr class="border-b"><td class="py-2 px-4 font-medium">Versatility</td><td class="py-2 px-4">High (min, max, GCD, etc.)</td><td class="py-2 px-4">Moderate (primarily sums)</td></tr>
+                                    <tr class="border-b"><td class="py-2 px-4 font-medium">Coding Ease</td><td class="py-2 px-4">More complex, especially lazy prop.</td><td class="py-2 px-4">Simpler for sum/update</td></tr>
+                                     <tr class="border-b"><td class="py-2 px-4 font-medium">Memory</td><td class="py-2 px-4">O(4N)</td><td class="py-2 px-4">O(N)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="study-links" class="tab-content hidden">
+                            <h4 class="font-semibold text-lg text-[#5a514b] mb-3">Segment Tree Resources</h4>
+                            <ul class="list-disc list-inside space-y-2 text-[#c58a56]">
+                                <li><a href="https://cp-algorithms.com/data_structures/segment_tree.html" target="_blank" rel="noopener noreferrer" class="hover:underline">CP-Algorithms: Segment Tree</a></li>
+                                <li><a href="https://www.geeksforgeeks.org/segment-tree-set-1-sum-of-given-range/" target="_blank" rel="noopener noreferrer" class="hover:underline">GeeksforGeeks: Segment Tree (Sum of Range)</a></li>
+                            </ul>
+                            <hr class="my-6">
+                             <h4 class="font-semibold text-lg text-[#5a514b] mb-3">Fenwick Tree (BIT) Resources</h4>
+                            <ul class="list-disc list-inside space-y-2 text-[#c58a56]">
+                                <li><a href="https://cp-algorithms.com/data_structures/fenwick.html" target="_blank" rel="noopener noreferrer" class="hover:underline">CP-Algorithms: Fenwick Tree</a></li>
+                                <li><a href="https://www.geeksforgeeks.org/binary-indexed-tree-or-fenwick-tree-2/" target="_blank" rel="noopener noreferrer" class="hover:underline">GeeksforGeeks: Binary Indexed Tree</a></li>
+                                <li><a href="https://www.topcoder.com/thrive/articles/Binary%20Indexed%20Trees" target="_blank" rel="noopener noreferrer" class="hover:underline">TopCoder: Binary Indexed Trees</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            },
+            renderPractice: function() {
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">The Journey to Mastery: Practice & Progression</h2>
+                    <p class="mb-8 text-gray-600">Knowing data structures theoretically is only the first step. True mastery comes from rigorous practice. Engaging with online platforms is essential for practical skill development.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        ${['Codeforces', 'LeetCode', 'AtCoder', 'TopCoder', 'CSES', 'GeeksforGeeks'].map(platform => `
+                            <div class="card p-6 text-center">
+                                <h4 class="text-lg font-semibold text-[#5a514b]">${platform}</h4>
+                                <p class="text-sm text-gray-500 mt-2">A leading platform for competitive programming practice and contests.</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+            renderArrayDetails: function() { return `<div>Array Details Coming Soon</div>`;},
+            renderLinkedListDetails: function() { return `<div>Linked List Details Coming Soon</div>`;},
+            renderStackDetails: function() {
+                return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Stacks: The LIFO Principle</h2>
+                    <p class="mb-8 text-gray-600">A stack is a linear data structure adhering to the Last-In, First-Out (LIFO) principle. It's used for parsing, simulating recursion, and solving problems involving "next greater element" patterns.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Interactive Demo</h3>
+                            <p class="mb-4 text-gray-600">Visualize stack operations. Add elements with Push and remove them with Pop.</p>
+                            <div class="flex items-center space-x-2 mb-4">
+                                <input id="stack-input" type="text" placeholder="Enter value" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c58a56]">
+                                <button id="stack-push-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Push</button>
+                                <button id="stack-pop-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Pop</button>
+                            </div>
+                            <div class="relative h-64 bg-gray-100 rounded-lg p-2 flex flex-col-reverse items-center">
+                                <div id="stack-container" class="w-2/3 flex flex-col-reverse items-stretch"></div>
+                                <div class="absolute bottom-0 w-2/3 h-1 bg-gray-300 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Complexity Quick-View</h3>
+                                <ul class="space-y-1 text-gray-600">
+                                    <li><strong>Push:</strong> O(1)</li>
+                                    <li><strong>Pop:</strong> O(1)</li>
+                                    <li><strong>Top/Peek:</strong> O(1)</li>
+                                </ul>
+                            </div>
+                             <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Key Use Cases</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Balanced Parentheses</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Expression Evaluation</span>
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">DFS (Iterative)</span>
+                                    <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Monotonic Stack</span>
+                                </div>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Ready to Practice?</h3>
+                                <button id="gemini-problems-btn" data-topic="Stack" class="gemini-button w-full flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm">
+                                    ✨ Suggest Practice Problems
+                                </button>
+                                <div id="gemini-problems-output" class="mt-4 space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            renderQueueDetails: function() {
+                 return `
+                    <h2 class="text-3xl font-bold tracking-tight mb-4">Queues: The FIFO Principle</h2>
+                    <p class="mb-8 text-gray-600">A queue operates on a First-In, First-Out (FIFO) principle. It's the core of Breadth-First Search (BFS) and is used in scheduling and resource management problems.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Interactive Demo</h3>
+                            <p class="mb-4 text-gray-600">Visualize queue operations. Add elements with Enqueue and remove them with Dequeue.</p>
+                            <div class="flex items-center space-x-2 mb-4">
+                                <input id="queue-input" type="text" placeholder="Enter value" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c58a56]">
+                                <button id="queue-enqueue-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Enqueue</button>
+                                <button id="queue-dequeue-btn" class="card-button px-4 py-2 rounded-lg font-semibold">Dequeue</button>
+                            </div>
+                            <div class="relative h-16 bg-gray-100 rounded-lg p-2 flex items-center">
+                                <div id="queue-container" class="w-full h-full flex items-center space-x-2"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Complexity Quick-View</h3>
+                                <ul class="space-y-1 text-gray-600">
+                                    <li><strong>Enqueue:</strong> O(1)</li>
+                                    <li><strong>Dequeue:</strong> O(1)</li>
+                                    <li><strong>Front/Peek:</strong> O(1)</li>
+                                </ul>
+                            </div>
+                             <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-2 text-[#5a514b]">Key Use Cases</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Breadth-First Search (BFS)</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Level Order Traversal</span>
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Task Scheduling</span>
+                                </div>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4 text-[#5a514b]">Ready to Practice?</h3>
+                                <button id="gemini-problems-btn" data-topic="Queue" class="gemini-button w-full flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm">
+                                    ✨ Suggest Practice Problems
+                                </button>
+                                <div id="gemini-problems-output" class="mt-4 space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+             renderDequeDetails: function() { return `<div>Deque Details Coming Soon</div>`;},
+             renderDsuDetails: function() { return `<div>DSU Details Coming Soon</div>`;},
+             renderTrieDetails: function() { return `<div>Trie Details Coming Soon</div>`;},
+            initStackAnimation: function() {
+                const input = document.getElementById('stack-input');
+                const pushBtn = document.getElementById('stack-push-btn');
+                const popBtn = document.getElementById('stack-pop-btn');
+                const container = document.getElementById('stack-container');
+                let stack = [];
+
+                const updateStackView = () => {
+                    container.innerHTML = stack.map(val => `<div class="bg-[#c58a56] text-white text-center font-semibold py-2 rounded-md shadow">${val}</div>`).join('');
+                };
+
+                pushBtn.addEventListener('click', () => {
+                    if (input.value && stack.length < 5) {
+                        stack.push(input.value);
+                        input.value = '';
+                        updateStackView();
+                    }
+                });
+
+                popBtn.addEventListener('click', () => {
+                    if (stack.length > 0) {
+                        stack.pop();
+                        updateStackView();
+                    }
+                });
+                
+                updateStackView();
+            },
+            initQueueAnimation: function() {
+                const input = document.getElementById('queue-input');
+                const enqueueBtn = document.getElementById('queue-enqueue-btn');
+                const dequeueBtn = document.getElementById('queue-dequeue-btn');
+                const container = document.getElementById('queue-container');
+                let queue = [];
+
+                const updateQueueView = () => {
+                    container.innerHTML = queue.map(val => `<div class="flex-shrink-0 bg-[#c58a56] text-white text-center font-semibold w-12 h-12 flex items-center justify-center rounded-md shadow">${val}</div>`).join('');
+                };
+
+                enqueueBtn.addEventListener('click', () => {
+                    if (input.value && queue.length < 7) {
+                        queue.push(input.value);
+                        input.value = '';
+                        updateQueueView();
+                    }
+                });
+
+                dequeueBtn.addEventListener('click', () => {
+                    if (queue.length > 0) {
+                        queue.shift();
+                        updateQueueView();
+                    }
+                });
+                updateQueueView();
+            },
+             initDequeAnimation: function() {},
+             initDsuAnimation: function() {},
+             initTrieAnimation: function() {},
+            initBigOChart: function() {
+                const ctx = document.getElementById('bigOChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'O(n²)', 'O(2ⁿ)'],
+                        datasets: [{
+                            label: 'Relative Growth Rate',
+                            data: [1, 2, 4, 6, 8, 10],
+                            backgroundColor: ['#eaddd7', '#d9c8bf', '#c58a56', '#b1744d', '#9d5e44', '#89483a'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) { return context[0].label; },
+                                    label: function(context) {
+                                        const labels = {
+                                            'O(1)': 'Any size',
+                                            'O(log n)': '~10¹⁸',
+                                            'O(n)': '~10⁷',
+                                            'O(n log n)': '~10⁵',
+                                            'O(n²)': '~10³',
+                                            'O(2ⁿ)': '~20-25'
+                                        };
+                                        return `Typical Max N: ${labels[context.label]}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { display: false },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            },
+            initTabbedViews: function() {
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const targetContentId = tab.dataset.tabContent;
+                        
+                        tab.closest('.card').querySelectorAll('.tab-content').forEach(content => {
+                            content.classList.add('hidden');
+                        });
+
+                        tab.parentElement.querySelectorAll('.tab').forEach(t => {
+                            t.classList.remove('active');
+                        });
+
+                        document.getElementById(targetContentId).classList.remove('hidden');
+                        tab.classList.add('active');
+                    });
+                });
+                document.querySelectorAll('.tabs').forEach(tabContainer => {
+                    tabContainer.querySelector('.tab')?.click();
+                });
+            },
+            setLoadingState: function(btn, output, isLoading) {
+                if (isLoading) {
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="loader"></span>`;
+                    output.innerHTML = '';
+                    output.classList.add('hidden');
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '✨ Suggest Practice Problems'; 
+                }
+            },
+            setAnalogyLoadingState: function(btn, output, isLoading) {
+                if(isLoading) {
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="loader"></span>`;
+                    output.innerHTML = '';
+                    output.classList.add('hidden');
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '✨ Explain with an Analogy';
+                }
+            },
+            fetchPracticeProblems: async function(topic) {
+                const btn = document.getElementById('gemini-problems-btn');
+                const output = document.getElementById('gemini-problems-output');
+                this.setLoadingState(btn, output, true);
+
+                const prompt = `Generate a list of three practice problems for the '${topic}' data structure, suitable for competitive programming. For each problem, provide a short title, a one-sentence description, and suggest a difficulty level (Easy, Medium, or Hard).`;
+                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = {
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    title: { type: "STRING" },
+                                    description: { type: "STRING" },
+                                    difficulty: { type: "STRING" }
+                                },
+                                required: ["title", "description", "difficulty"]
+                            }
+                        }
+                    }
+                };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates[0].content.parts[0].text) {
+                        const problems = JSON.parse(result.candidates[0].content.parts[0].text);
+                        this.displayProblems(problems);
+                    } else {
+                        output.innerHTML = `<p class="text-red-500">Could not generate problems. Please try again.</p>`;
+                        output.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error("Error fetching problems:", error);
+                    output.innerHTML = `<p class="text-red-500">An error occurred. See console for details.</p>`;
+                    output.classList.remove('hidden');
+                } finally {
+                    this.setLoadingState(btn, output, false);
+                }
+            },
+            displayProblems: function(problems) {
+                const output = document.getElementById('gemini-problems-output');
+                const difficultyColors = { 'Easy': 'bg-green-100 text-green-800', 'Medium': 'bg-yellow-100 text-yellow-800', 'Hard': 'bg-red-100 text-red-800' };
+                output.innerHTML = problems.map(p => `
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-semibold text-[#5a514b]">${p.title}</h4>
+                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full ${difficultyColors[p.difficulty] || 'bg-gray-100 text-gray-800'}">${p.difficulty}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">${p.description}</p>
+                    </div>
+                `).join('');
+                output.classList.remove('hidden');
+            },
+            fetchAnalogy: async function(topic) {
+                const btn = document.getElementById('gemini-analogy-btn');
+                const output = document.getElementById('gemini-analogy-output');
+                this.setAnalogyLoadingState(btn, output, true);
+
+                const prompt = `Explain the concept of '${topic}' in data structures using a simple, real-world analogy. Keep the explanation concise, engaging, and easy for a beginner to understand.`;
+                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates[0].content.parts[0].text) {
+                        output.innerHTML = result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+                        output.classList.remove('hidden');
+                    } else {
+                        output.innerHTML = `<p class="text-red-500">Could not generate an explanation. Please try again.</p>`;
+                        output.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error("Error fetching analogy:", error);
+                    output.innerHTML = `<p class="text-red-500">An error occurred. See console for details.</p>`;
+                    output.classList.remove('hidden');
+                } finally {
+                    this.setAnalogyLoadingState(btn, output, false);
+                }
+            },
+            setView: function(view) {
+                this.activeView = view;
+                this.render();
+            },
+            init: function() {
+                document.getElementById('nav-container').addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        this.setView(e.target.dataset.view);
+                    }
+                });
+                this.setView('home');
+            }
+        };
+        app.init();
+    </script>
+</body>
+</html>
